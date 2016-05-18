@@ -195,14 +195,18 @@ class WebRequest(http.Request):
         if not message.get("more_content", False):
             self.finish()
             logger.debug("HTTP response complete for %s", self.reply_channel)
-            self.factory.log_action("http", "complete", {
-                "path": self.path.decode("ascii"),
-                "status": self.code,
-                "method": self.method.decode("ascii"),
-                "client": "%s:%s" % tuple(self.client_addr) if self.client_addr else None,
-                "time_taken": self.duration(),
-                "size": self.sentLength,
-            })
+            try:
+                self.factory.log_action("http", "complete", {
+                    "path": self.path.decode("ascii"),
+                    "status": self.code,
+                    "method": self.method.decode("ascii"),
+                    "client": "%s:%s" % tuple(self.client_addr) if self.client_addr else None,
+                    "time_taken": self.duration(),
+                    "size": self.sentLength,
+                })
+            except UnicodeDecodeError:
+                print('Could not decode path:')
+                print(self.path)
         else:
             logger.debug("HTTP response chunk for %s", self.reply_channel)
 
